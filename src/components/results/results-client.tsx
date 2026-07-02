@@ -6,6 +6,7 @@ import { Award, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 import { ModuleStepper } from "@/components/layout/module-stepper";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { clearPendingQuiz } from "@/lib/quiz-pending";
 import { cn } from "@/lib/utils";
 import type { GradedQuestion } from "@/lib/types";
 
@@ -126,7 +127,10 @@ export function ResultsClient({
           <Button variant="outline">Back to catalog</Button>
         </Link>
         {!passed && canRetake && (
-          <Link href={`/modules/${moduleId}/quiz`}>
+          <Link
+            href={`/modules/${moduleId}/quiz`}
+            onClick={() => clearPendingQuiz(moduleId)}
+          >
             <Button>
               <RotateCcw className="h-4 w-4" />
               Retake quiz

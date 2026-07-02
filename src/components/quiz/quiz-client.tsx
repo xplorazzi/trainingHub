@@ -13,6 +13,7 @@ import {
   savePendingQuiz,
   type PendingQuizAnswer,
 } from "@/lib/quiz-pending";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 interface QuizQuestion {
@@ -34,11 +35,11 @@ export function QuizClient({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const resumeHandled = useRef(false);
+  const initialized = useRef(false);
+  const submitCompleted = useRef(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [resuming, setResuming] = useState(false);
   const [resumeMessage, setResumeMessage] = useState<string | null>(null);
 
   const current = questions[currentIndex];
@@ -52,16 +53,8 @@ export function QuizClient({
     }));
   }, [answers, questions]);
 
-  const clearResumeParam = useCallback(() => {
-    if (searchParams.get("resume") !== "1") return;
-    router.replace(`/modules/${moduleId}/quiz`);
-  }, [moduleId, router, searchParams]);
-
   const submitAnswers = useCallback(
-    async (
-      payload: PendingQuizAnswer[],
-      options?: { fromResume?: boolean },
-    ) => {
+    async (payload: PendingQuizAnswer[]) => {
       const res = await fetch(`/api/modules/${moduleId}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -73,71 +66,60 @@ export function QuizClient({
         const data = await res.json().catch(() => ({}));
         if (res.status === 401) {
           savePendingQuiz(moduleId, payload);
-          if (options?.fromResume) {
+          const supabase = createClient();
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+
+          if (session) {
             setResumeMessage(
-              "You're signed in, but the server could not verify your session. Click Submit quiz to try again.",
+              "You're signed in, but the server couldn't verify your session. Refresh the page and click Submit quiz again.",
             );
             return false;
           }
-          const returnUrl = `/modules/${moduleId}/quiz?resume=1`;
+
+          setResumeMessage(
+            "Sign in is required to submit. Redirecting to sign in…",
+          );
+          const returnUrl = `/modules/${moduleId}/quiz`;
           window.location.href = `/login?redirect=${encodeURIComponent(returnUrl)}`;
           return false;
         }
-        alert(data.error ?? "Failed to submit quiz");
+        setResumeMessage(data.error ?? "Failed to submit quiz. Please try again.");
         return false;
       }
 
       const data = await res.json();
+      submitCompleted.current = true;
       clearPendingQuiz(moduleId);
-      router.push(`/modules/${moduleId}/results?attemptId=${data.attemptId}`);
+      window.location.href = `/modules/${moduleId}/results?attemptId=${data.attemptId}`;
       return true;
     },
-    [moduleId, router],
+    [moduleId],
   );
 
   useEffect(() => {
-    if (answeredCount === 0) return;
+    if (submitCompleted.current || answeredCount === 0) return;
     savePendingQuiz(moduleId, buildAnswerPayload());
   }, [answeredCount, buildAnswerPayload, moduleId]);
 
   useEffect(() => {
-    if (resumeHandled.current) return;
-    resumeHandled.current = true;
+    if (initialized.current) return;
+    initialized.current = true;
 
-    const pending = loadPendingQuiz(moduleId);
-    const shouldResume = searchParams.get("resume") === "1";
-
-    if (!pending) {
-      if (shouldResume) {
-        clearResumeParam();
-        setResumeMessage(
-          "Saved answers were not found in this browser. Please complete the quiz again.",
-        );
-      }
-      return;
+    if (searchParams.get("resume") === "1") {
+      router.replace(`/modules/${moduleId}/quiz`);
     }
 
+    const pending = loadPendingQuiz(moduleId);
+    if (!pending) return;
+
     setAnswers(pendingToAnswerMap(pending));
-
-    if (!shouldResume) return;
-
-    clearResumeParam();
-    setResuming(true);
-
-    void (async () => {
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      try {
-        const ok = await submitAnswers(pending.answers, { fromResume: true });
-        if (!ok) {
-          setResumeMessage(
-            "Your answers are restored. Click Submit quiz to finish.",
-          );
-        }
-      } finally {
-        setResuming(false);
-      }
-    })();
-  }, [clearResumeParam, moduleId, searchParams, submitAnswers]);
+    setCurrentIndex(questions.length - 1);
+    setResumeMessage(
+      "Your saved answers were restored. Review and click Submit quiz to finish.",
+    );
+  }, [moduleId, questions.length, router, searchParams]);
 
   if (!current) {
     return (
@@ -171,13 +153,7 @@ export function QuizClient({
     <div>
       <ModuleStepper current="quiz" moduleTitle={title} />
 
-      {resuming && (
-        <div className="mb-4 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-900">
-          Submitting your saved answers…
-        </div>
-      )}
-
-      {resumeMessage && !resuming && (
+      {resumeMessage && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           {resumeMessage}
         </div>
@@ -214,7 +190,7 @@ export function QuizClient({
                 key={index}
                 type="button"
                 onClick={() => selectOption(index)}
-                disabled={resuming}
+                disabled={submitting}
                 className={cn(
                   "w-full rounded-lg border p-4 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
                   answers[current.id] === index
@@ -236,19 +212,19 @@ export function QuizClient({
         <Button
           variant="outline"
           onClick={() => setCurrentIndex((i) => i - 1)}
-          disabled={currentIndex === 0 || resuming}
+          disabled={currentIndex === 0 || submitting}
         >
           <ChevronLeft className="h-4 w-4" />
           Previous
         </Button>
 
         {isLast ? (
-          <Button onClick={handleSubmit} disabled={submitting || resuming}>
+          <Button onClick={handleSubmit} disabled={submitting}>
             <Send className="h-4 w-4" />
-            {submitting || resuming ? "Submitting…" : "Submit quiz"}
+            {submitting ? "Submitting…" : "Submit quiz"}
           </Button>
         ) : (
-          <Button onClick={() => setCurrentIndex((i) => i + 1)} disabled={resuming}>
+          <Button onClick={() => setCurrentIndex((i) => i + 1)} disabled={submitting}>
             Next
             <ChevronRight className="h-4 w-4" />
           </Button>
