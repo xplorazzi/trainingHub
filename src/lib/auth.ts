@@ -1,7 +1,9 @@
 import { cache } from "react";
+import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 import { Role } from "@prisma/client";
 import { prisma } from "./prisma";
 import { createClient } from "./supabase/server";
+import { getSupabaseAnonKey } from "./supabase/env";
 import type { Role as AppRole } from "./types";
 
 export interface SessionUser {
@@ -11,11 +13,22 @@ export interface SessionUser {
   role: AppRole;
 }
 
-async function ensureProfile(user: {
+export type RequestAuthResult =
+  | { ok: true; user: SessionUser }
+  | {
+      ok: false;
+      status: 401 | 503 | 500;
+      code: "AUTH_REQUIRED" | "DB_ERROR" | "MISCONFIGURED";
+      error: string;
+    };
+
+type SupabaseAuthUser = {
   id: string;
   email?: string | null;
   user_metadata?: Record<string, unknown>;
-}) {
+};
+
+async function ensureProfile(user: SupabaseAuthUser) {
   const existing = await prisma.profile.findUnique({
     where: { id: user.id },
     select: { id: true, email: true, name: true, role: true },
@@ -31,53 +44,162 @@ async function ensureProfile(user: {
       ? metadataName.trim()
       : email.split("@")[0] || "User";
 
-  try {
-    return await prisma.profile.create({
-      data: {
-        id: user.id,
-        email,
-        name,
-        role: Role.employee,
+  return prisma.profile.create({
+    data: {
+      id: user.id,
+      email,
+      name,
+      role: Role.employee,
+    },
+    select: { id: true, email: true, name: true, role: true },
+  });
+}
+
+function toSessionUser(profile: {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+}): SessionUser {
+  return {
+    id: profile.id,
+    email: profile.email,
+    name: profile.name,
+    role: profile.role as AppRole,
+  };
+}
+
+async function getSupabaseUserFromBearerToken(token: string) {
+  const supabase = createSupabaseJsClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    getSupabaseAnonKey()!,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
       },
-      select: { id: true, email: true, name: true, role: true },
-    });
-  } catch {
-    return prisma.profile.findUnique({
-      where: { id: user.id },
-      select: { id: true, email: true, name: true, role: true },
-    });
+    },
+  );
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
+  if (error || !user) return null;
+  return user;
+}
+
+async function getSupabaseUserFromCookies() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+}
+
+/** Resolve the signed-in user for API route handlers (Bearer token + cookies). */
+export async function authenticateRequest(
+  request: Request,
+): Promise<RequestAuthResult> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !getSupabaseAnonKey()) {
+    return {
+      ok: false,
+      status: 500,
+      code: "MISCONFIGURED",
+      error: "Supabase is not configured on the server.",
+    };
   }
+
+  if (!process.env.DATABASE_URL) {
+    return {
+      ok: false,
+      status: 500,
+      code: "MISCONFIGURED",
+      error: "DATABASE_URL is not set on the server.",
+    };
+  }
+
+  let supabaseUser: SupabaseAuthUser | null = null;
+
+  const authHeader = request.headers.get("authorization");
+  if (authHeader?.toLowerCase().startsWith("bearer ")) {
+    const token = authHeader.slice(7).trim();
+    if (token) {
+      supabaseUser = await getSupabaseUserFromBearerToken(token);
+    }
+  }
+
+  if (!supabaseUser) {
+    try {
+      supabaseUser = await getSupabaseUserFromCookies();
+    } catch (error) {
+      console.error("Cookie auth failed:", error);
+    }
+  }
+
+  if (!supabaseUser) {
+    return {
+      ok: false,
+      status: 401,
+      code: "AUTH_REQUIRED",
+      error: "Sign in required to submit quiz.",
+    };
+  }
+
+  try {
+    const profile = await ensureProfile(supabaseUser);
+    if (!profile) {
+      return {
+        ok: false,
+        status: 503,
+        code: "DB_ERROR",
+        error: "Could not create your user profile. Check the database connection.",
+      };
+    }
+
+    return { ok: true, user: toSessionUser(profile) };
+  } catch (error) {
+    console.error("Profile lookup failed:", error);
+    return {
+      ok: false,
+      status: 503,
+      code: "DB_ERROR",
+      error:
+        "Database connection failed. On Netlify, set DATABASE_URL to the Supabase transaction pooler (port 6543).",
+    };
+  }
+}
+
+/** @deprecated Use authenticateRequest in API routes for clearer errors. */
+export async function getSessionUserFromRequest(
+  request: Request,
+): Promise<SessionUser | null> {
+  const result = await authenticateRequest(request);
+  return result.ok ? result.user : null;
 }
 
 /** One auth + profile lookup per request (shared by layout and pages). */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ||
+    !getSupabaseAnonKey() ||
     !process.env.DATABASE_URL
   ) {
     return null;
   }
 
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const supabaseUser = await getSupabaseUserFromCookies();
+    if (!supabaseUser) return null;
 
-    if (!user) return null;
-
-    const profile = await ensureProfile(user);
+    const profile = await ensureProfile(supabaseUser);
     if (!profile) return null;
 
-    return {
-      id: profile.id,
-      email: profile.email,
-      name: profile.name,
-      role: profile.role as AppRole,
-    };
-  } catch {
+    return toSessionUser(profile);
+  } catch (error) {
+    console.error("getSessionUser error:", error);
     return null;
   }
 });

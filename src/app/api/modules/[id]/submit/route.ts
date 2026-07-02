@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/auth";
+import { authenticateRequest } from "@/lib/auth";
 import { resolveModuleRecord } from "@/lib/modules";
 import { prisma } from "@/lib/prisma";
 import { gradeQuiz, computePassed } from "@/lib/scoring";
@@ -10,14 +10,20 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id: moduleKey } = await params;
-  const user = await getSessionUser();
+  try {
+    const { id: moduleKey } = await params;
+    const auth = await authenticateRequest(request);
 
-  if (!user) {
-    return NextResponse.json({ error: "Sign in required to submit quiz" }, { status: 401 });
-  }
+    if (!auth.ok) {
+      return NextResponse.json(
+        { error: auth.error, code: auth.code },
+        { status: auth.status },
+      );
+    }
 
-  const trainingModule = await resolveModuleRecord(moduleKey);
+    const user = auth.user;
+
+    const trainingModule = await resolveModuleRecord(moduleKey);
   if (!trainingModule) {
     return NextResponse.json({ error: "Module not found" }, { status: 404 });
   }
@@ -112,4 +118,11 @@ export async function POST(
     canRetake,
     remainingAttempts,
   });
+  } catch (error) {
+    console.error("Quiz submit error:", error);
+    return NextResponse.json(
+      { error: "Could not save your quiz. The database may be unreachable." },
+      { status: 503 },
+    );
+  }
 }

@@ -13,7 +13,7 @@ import {
   savePendingQuiz,
   type PendingQuizAnswer,
 } from "@/lib/quiz-pending";
-import { createClient } from "@/lib/supabase/client";
+import { authJsonHeaders } from "@/lib/supabase/fetch-auth";
 import { cn } from "@/lib/utils";
 
 interface QuizQuestion {
@@ -55,37 +55,44 @@ export function QuizClient({
 
   const submitAnswers = useCallback(
     async (payload: PendingQuizAnswer[]) => {
+      const headers = await authJsonHeaders();
       const res = await fetch(`/api/modules/${moduleId}/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         credentials: "same-origin",
         body: JSON.stringify({ answers: payload }),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        if (res.status === 401) {
-          savePendingQuiz(moduleId, payload);
-          const supabase = createClient();
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
+        savePendingQuiz(moduleId, payload);
 
-          if (session) {
-            setResumeMessage(
-              "You're signed in, but the server couldn't verify your session. Refresh the page and click Submit quiz again.",
-            );
-            return false;
-          }
-
+        if (data.code === "DB_ERROR" || res.status === 503) {
           setResumeMessage(
-            "Sign in is required to submit. Redirecting to sign in…",
+            data.error ??
+              "Database connection failed on the server. Check Netlify DATABASE_URL (port 6543 pooler).",
           );
-          const returnUrl = `/modules/${moduleId}/quiz`;
-          window.location.href = `/login?redirect=${encodeURIComponent(returnUrl)}`;
           return false;
         }
-        setResumeMessage(data.error ?? "Failed to submit quiz. Please try again.");
+
+        if (res.status === 401) {
+          if (headers.Authorization) {
+            setResumeMessage("Your sign-in session expired. Redirecting to sign in…");
+          } else {
+            setResumeMessage("Sign in is required to submit. Redirecting to sign in…");
+          }
+          const returnUrl = `/modules/${moduleId}/quiz`;
+          window.setTimeout(() => {
+            window.location.href = `/login?redirect=${encodeURIComponent(returnUrl)}`;
+          }, 1200);
+          return false;
+        }
+
+        setResumeMessage(
+          typeof data.error === "string"
+            ? data.error
+            : "Failed to submit quiz. Please try again.",
+        );
         return false;
       }
 

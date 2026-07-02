@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/auth";
+import { authenticateRequest } from "@/lib/auth";
 import { resolveModuleRecord } from "@/lib/modules";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: moduleKey } = await params;
-  const user = await getSessionUser();
-
-  if (!user) {
+  const auth = await authenticateRequest(request);
+  if (!auth.ok) {
     return NextResponse.json({ ok: true });
   }
+
+  const user = auth.user;
 
   const trainingModule = await resolveModuleRecord(moduleKey);
   if (!trainingModule) {

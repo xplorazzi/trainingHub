@@ -6,6 +6,7 @@ import { ChevronRight, Target } from "lucide-react";
 import { ModuleStepper } from "@/components/layout/module-stepper";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button-variants";
+import { authJsonHeaders } from "@/lib/supabase/fetch-auth";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -26,7 +27,12 @@ export function VideoClient({
 
   async function handleAcknowledge() {
     setWatched(true);
-    await fetch(`/api/modules/${moduleId}/acknowledge`, { method: "POST" });
+    const headers = await authJsonHeaders();
+    await fetch(`/api/modules/${moduleId}/acknowledge`, {
+      method: "POST",
+      headers,
+      credentials: "same-origin",
+    });
   }
 
   return (
