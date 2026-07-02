@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { resolveInternalRedirect } from "@/lib/safe-redirect";
 import { getSupabaseAnonKey } from "./env";
 
 function isProtectedPath(pathname: string) {
@@ -46,19 +47,21 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user && isProtectedPath(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(url);
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.search = "";
+    loginUrl.searchParams.set(
+      "redirect",
+      `${pathname}${request.nextUrl.search}`,
+    );
+    return NextResponse.redirect(loginUrl);
   }
 
   if (user && pathname === "/login") {
     const redirectTo = request.nextUrl.searchParams.get("redirect");
-    const url = request.nextUrl.clone();
-    url.pathname =
-      redirectTo && redirectTo.startsWith("/") ? redirectTo : "/";
-    url.search = "";
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(
+      resolveInternalRedirect(redirectTo, request.url),
+    );
   }
 
   return supabaseResponse;

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { resolveInternalRedirect } from "@/lib/safe-redirect";
 
 const DEMO_USERS = [
   { label: "Demo Employee", email: "employee@demo.trainhub.local", password: "demo1234" },
@@ -40,7 +41,8 @@ export function LoginForm() {
       return;
     }
 
-    router.push(redirect);
+    const destination = resolveInternalRedirect(redirect, window.location.origin);
+    router.push(`${destination.pathname}${destination.search}`);
     router.refresh();
   }
 
