@@ -4,6 +4,11 @@
  */
 
 function withPoolerParams(url: string): string {
+  // Transaction pooler (6543) needs pgbouncer mode; direct 5432 must not use it.
+  if (!url.includes(":6543")) {
+    return url;
+  }
+
   const params = new URLSearchParams(url.includes("?") ? url.split("?")[1] : "");
   params.set("pgbouncer", "true");
   params.set("connection_limit", "1");

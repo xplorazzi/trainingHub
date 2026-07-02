@@ -79,6 +79,7 @@ First build may take 2–5 minutes. When it succeeds, open the Netlify URL.
 | Build fails on Prisma | Ensure `DATABASE_URL` is set in Netlify env vars |
 | Login redirects fail | Add your Netlify URL to Supabase redirect URLs |
 | Database errors at runtime | Use pooled `DATABASE_URL` (6543), not direct 5432 |
+| Quiz results 404 on Netlify | Set `DATABASE_URL` to Supabase **transaction pooler** (6543); redeploy after env change |
 | Images don’t load | Use direct image URLs; add host to `next.config.ts` `images.remotePatterns` |
 | Secrets scan fails on `NEXT_PUBLIC_*` | Mark those vars as **Build** not **Secret** in Netlify; or rely on `SECRETS_SCAN_OMIT_KEYS` in `netlify.toml` |
 | `@opentelemetry/api` edge error | Fixed via dependency in `package.json` — redeploy after pulling latest |

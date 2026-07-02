@@ -47,6 +47,14 @@ export function getModuleRouteKey(module: { id: string; slug?: string | null }) 
   return module.slug ?? module.id;
 }
 
+/** Match a route param (slug or cuid) to a module record. */
+export function moduleMatchesRouteKey(
+  module: { id: string; slug?: string | null },
+  routeKey: string,
+) {
+  return module.id === routeKey || module.slug === routeKey;
+}
+
 function catalogFromSeed() {
   return seedModules.map((module) => ({
     id: module.slug,
@@ -232,19 +240,11 @@ export async function getModuleForQuiz(moduleKey: string, userId?: string) {
 }
 
 export async function resolveModuleRecord(moduleKey: string) {
-  const fromDb = await findTrainingModule(moduleKey);
-  if (fromDb) return fromDb;
-
-  const seed = getSeedModule(moduleKey);
-  if (!seed) return null;
-
-  return {
-    id: seed.slug,
-    slug: seed.slug,
-    title: seed.title,
-    passThreshold: seed.passThreshold,
-    maxAttempts: seed.maxAttempts,
-  };
+  return prisma.trainingModule.findFirst({
+    where: {
+      OR: [{ id: moduleKey }, { slug: moduleKey }],
+    },
+  });
 }
 
 export async function getModuleById(moduleKey: string, userId?: string) {
@@ -252,16 +252,14 @@ export async function getModuleById(moduleKey: string, userId?: string) {
 }
 
 export async function getAttemptById(attemptId: string) {
-  return safeDbQuery(() =>
-    prisma.attempt.findUnique({
-      where: { id: attemptId },
-      include: {
-        module: {
-          include: {
-            questions: { orderBy: { orderIndex: "asc" } },
-          },
+  return prisma.attempt.findUnique({
+    where: { id: attemptId },
+    include: {
+      module: {
+        include: {
+          questions: { orderBy: { orderIndex: "asc" } },
         },
       },
-    }),
-  );
+    },
+  });
 }

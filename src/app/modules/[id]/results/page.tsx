@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ResultsClient } from "@/components/results/results-client";
-import { getAttemptById, getModuleRouteKey, resolveModuleRecord } from "@/lib/modules";
+import { getAttemptById, getModuleRouteKey, moduleMatchesRouteKey } from "@/lib/modules";
 import { prisma } from "@/lib/prisma";
 import { gradeQuiz } from "@/lib/scoring";
 import type { QuizAnswer } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
 
 export default async function ResultsPage({
   params,
@@ -27,10 +29,8 @@ export default async function ResultsPage({
     );
   }
 
-  const routeModule = await resolveModuleRecord(id);
   const attempt = await getAttemptById(attemptId);
-
-  if (!attempt || !routeModule || attempt.moduleId !== routeModule.id) {
+  if (!attempt || !moduleMatchesRouteKey(attempt.module, id)) {
     notFound();
   }
 
