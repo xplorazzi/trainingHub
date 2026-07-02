@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
-import { Clock, PlayCircle } from "lucide-react";
+import { Clock } from "lucide-react";
+import { ModuleThumbnail } from "@/components/catalog/module-thumbnail";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ProgressStatus } from "@/lib/types";
@@ -26,6 +26,7 @@ export function ModuleCard({
   category,
   durationMins,
   thumbnail,
+  videoUrl,
   required,
   progress,
 }: {
@@ -36,26 +37,14 @@ export function ModuleCard({
   category: string;
   durationMins: number;
   thumbnail: string | null;
+  videoUrl?: string | null;
   required: boolean;
   progress: { status: ProgressStatus; attemptCount: number } | null;
 }) {
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-md">
       <div className="aspect-video bg-slate-100">
-        {thumbnail ? (
-          <Image
-            src={thumbnail}
-            alt=""
-            width={400}
-            height={225}
-            className="h-full w-full object-cover"
-            unoptimized
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-slate-400">
-            <PlayCircle className="h-12 w-12" />
-          </div>
-        )}
+        <ModuleThumbnail thumbnail={thumbnail} videoUrl={videoUrl} title={title} />
       </div>
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center gap-2">

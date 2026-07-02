@@ -1,5 +1,6 @@
 import modulesSeed from "@/data/modules.json";
 import { prisma } from "./prisma";
+import { resolveModuleThumbnail } from "./thumbnails";
 import type { ProgressStatus, SeedModule } from "./types";
 
 export const seedModules = modulesSeed as SeedModule[];
@@ -12,6 +13,7 @@ const moduleCatalogSelect = {
   category: true,
   durationMins: true,
   thumbnail: true,
+  videoUrl: true,
   required: true,
 } as const;
 
@@ -63,7 +65,8 @@ function catalogFromSeed() {
     description: module.description,
     category: module.category,
     durationMins: module.durationMins,
-    thumbnail: module.thumbnail,
+    thumbnail: resolveModuleThumbnail(module.thumbnail, module.videoUrl),
+    videoUrl: module.videoUrl,
     required: module.required,
     progress: null as {
       status: ProgressStatus;
@@ -115,6 +118,7 @@ export async function getCatalogModules(userId?: string) {
   if (!userId) {
     return modules.map((module) => ({
       ...module,
+      thumbnail: resolveModuleThumbnail(module.thumbnail, module.videoUrl),
       progress: null as {
         status: ProgressStatus;
         attemptCount: number;
@@ -137,6 +141,7 @@ export async function getCatalogModules(userId?: string) {
     const progress = progressMap.get(module.id);
     return {
       ...module,
+      thumbnail: resolveModuleThumbnail(module.thumbnail, module.videoUrl),
       progress: progress
         ? {
             status: progress.status as ProgressStatus,

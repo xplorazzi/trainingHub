@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   output: "standalone",
   images: {
     remotePatterns: [
-      { hostname: "images.unsplash.com" },
-      { hostname: "i.ytimg.com" },
+      new URL("https://images.unsplash.com/**"),
+      new URL("https://i.ytimg.com/**"),
     ],
   },
 };

@@ -2,6 +2,7 @@ import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
 import { PrismaClient, Role } from "@prisma/client";
 import { getSeedDatabaseUrl } from "../src/lib/db-url";
+import { resolveModuleThumbnail } from "../src/lib/thumbnails";
 import modulesSeed from "../src/data/modules.json";
 import type { SeedModule } from "../src/lib/types";
 
@@ -189,7 +190,7 @@ async function seedModulesData() {
           videoUrl: seed.videoUrl,
           passThreshold: seed.passThreshold,
           durationMins: seed.durationMins,
-          thumbnail: seed.thumbnail,
+          thumbnail: resolveModuleThumbnail(seed.thumbnail, seed.videoUrl),
           category: seed.category,
           objectives: seed.objectives,
           required: seed.required,
@@ -220,7 +221,7 @@ async function seedModulesData() {
         videoUrl: seed.videoUrl,
         passThreshold: seed.passThreshold,
         durationMins: seed.durationMins,
-        thumbnail: seed.thumbnail,
+        thumbnail: resolveModuleThumbnail(seed.thumbnail, seed.videoUrl),
         category: seed.category,
         objectives: seed.objectives,
         required: seed.required,

@@ -13,6 +13,7 @@ export interface CatalogModule {
   category: string;
   durationMins: number;
   thumbnail: string | null;
+  videoUrl?: string | null;
   required: boolean;
   progress: { status: ProgressStatus; attemptCount: number } | null;
 }

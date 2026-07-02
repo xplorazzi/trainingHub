@@ -13,6 +13,7 @@ async function loadCatalog(userId?: string) {
     category: m.category,
     durationMins: m.durationMins,
     thumbnail: m.thumbnail,
+    videoUrl: m.videoUrl,
     required: m.required,
     progress: m.progress,
   }));
