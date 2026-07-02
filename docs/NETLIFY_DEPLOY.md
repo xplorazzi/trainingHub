@@ -39,8 +39,8 @@ Add **every** variable from your local `.env`:
 | `NEXT_PUBLIC_SUPABASE_URL` | **Build** (not “Secret”) | Public — safe in client bundle |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | **Build** (not “Secret”) | Public anon/publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Secret** | Server-only |
-| `DATABASE_URL` | **Secret** | Port **6543** + `pgbouncer=true` |
-| `DIRECT_URL` | Secret (optional) | Migrations only |
+| `DATABASE_URL` | **Secret** | **Transaction pooler** port **6543** (not `db.*.supabase.co:5432`). User must be `postgres.PROJECT_REF`. Example host: `aws-1-ap-southeast-2.pooler.supabase.com` |
+| `DIRECT_URL` | Secret (optional) | Direct **5432** — migrations/seed only |
 
 **Important:** Do **not** mark `NEXT_PUBLIC_*` variables as “Secret” in Netlify — they are meant to appear in the browser. Only service role and database URLs should be secrets. `netlify.toml` also sets `SECRETS_SCAN_OMIT_KEYS` for public Supabase vars.
 
@@ -78,7 +78,7 @@ First build may take 2–5 minutes. When it succeeds, open the Netlify URL.
 |---------|-----|
 | Build fails on Prisma | Ensure `DATABASE_URL` is set in Netlify env vars |
 | Login redirects fail | Add your Netlify URL to Supabase redirect URLs |
-| Database errors at runtime | Use pooled `DATABASE_URL` (6543), not direct 5432 |
+| Database errors at runtime | Set `DATABASE_URL` to Supabase **Transaction pooler** (6543). Copy from Supabase → Database → Connection string → **Transaction pooler**. Username is `postgres.PROJECT_REF`, not `postgres`. |
 | Quiz results 404 on Netlify | Set `DATABASE_URL` to Supabase **transaction pooler** (6543); redeploy after env change |
 | Images don’t load | Use direct image URLs; add host to `next.config.ts` `images.remotePatterns` |
 | Secrets scan fails on `NEXT_PUBLIC_*` | Mark those vars as **Build** not **Secret** in Netlify; or rely on `SECRETS_SCAN_OMIT_KEYS` in `netlify.toml` |
