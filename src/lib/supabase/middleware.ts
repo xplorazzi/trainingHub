@@ -53,8 +53,11 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && pathname === "/login") {
+    const redirectTo = request.nextUrl.searchParams.get("redirect");
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname =
+      redirectTo && redirectTo.startsWith("/") ? redirectTo : "/";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 

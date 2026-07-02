@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ResultsClient } from "@/components/results/results-client";
-import { getAttemptById } from "@/lib/modules";
+import { getAttemptById, getModuleRouteKey, resolveModuleRecord } from "@/lib/modules";
 import { prisma } from "@/lib/prisma";
 import { gradeQuiz } from "@/lib/scoring";
 import type { QuizAnswer } from "@/lib/types";
@@ -27,9 +27,14 @@ export default async function ResultsPage({
     );
   }
 
+  const routeModule = await resolveModuleRecord(id);
   const attempt = await getAttemptById(attemptId);
-  if (!attempt || attempt.moduleId !== id) notFound();
 
+  if (!attempt || !routeModule || attempt.moduleId !== routeModule.id) {
+    notFound();
+  }
+
+  const moduleKey = getModuleRouteKey(attempt.module);
   const storedAnswers = attempt.answers as unknown as QuizAnswer[];
   const questionsForGrading = attempt.module.questions.map((q) => ({
     id: q.id,
@@ -42,7 +47,7 @@ export default async function ResultsPage({
   const graded = gradeQuiz(questionsForGrading, storedAnswers);
 
   const progress = await prisma.moduleProgress.findUnique({
-    where: { userId_moduleId: { userId: attempt.userId, moduleId: id } },
+    where: { userId_moduleId: { userId: attempt.userId, moduleId: attempt.moduleId } },
   });
 
   const attemptCount = progress?.attemptCount ?? 1;
@@ -55,7 +60,7 @@ export default async function ResultsPage({
         ← Back to catalog
       </Link>
       <ResultsClient
-        moduleId={id}
+        moduleId={moduleKey}
         title={attempt.module.title}
         score={attempt.score}
         total={attempt.total}

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ChevronRight, Target } from "lucide-react";
 import { ModuleStepper } from "@/components/layout/module-stepper";
 import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function VideoClient({
@@ -75,11 +77,12 @@ export function VideoClient({
         </label>
 
         {watched ? (
-          <Link href={`/modules/${moduleId}/quiz`}>
-            <Button className="w-full sm:w-auto">
-              Continue to quiz
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+          <Link
+            href={`/modules/${moduleId}/quiz`}
+            className={cn(buttonVariants(), "w-full sm:w-auto")}
+          >
+            Continue to quiz
+            <ChevronRight className="h-4 w-4" />
           </Link>
         ) : (
           <Button disabled className="w-full sm:w-auto">

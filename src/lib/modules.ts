@@ -19,8 +19,13 @@ function isDbUnavailable(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   return (
     error.name === "PrismaClientInitializationError" ||
+    error.name === "PrismaClientKnownRequestError" ||
+    error.name === "PrismaClientRustPanicError" ||
     error.message.includes("Error querying the database") ||
-    error.message.includes("DATABASE_URL is not set")
+    error.message.includes("DATABASE_URL is not set") ||
+    error.message.includes("does not exist") ||
+    error.message.includes("column") ||
+    error.message.includes("Connection")
   );
 }
 
