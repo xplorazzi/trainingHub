@@ -28,7 +28,75 @@ type SupabaseAuthUser = {
   user_metadata?: Record<string, unknown>;
 };
 
-async function ensureProfile(user: SupabaseAuthUser) {
+type ProfileRow = {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+};
+
+function profileName(user: SupabaseAuthUser, email: string) {
+  const metadataName = user.user_metadata?.name;
+  return typeof metadataName === "string" && metadataName.trim()
+    ? metadataName.trim()
+    : email.split("@")[0] || "User";
+}
+
+async function ensureProfileViaSupabase(
+  user: SupabaseAuthUser,
+): Promise<ProfileRow | null> {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const email = user.email?.trim();
+
+  if (!serviceKey || !supabaseUrl || !email) return null;
+
+  const admin = createSupabaseJsClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const { data: existing } = await admin
+    .from("profiles")
+    .select("id, email, name, role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (existing) {
+    return {
+      id: existing.id,
+      email: existing.email,
+      name: existing.name,
+      role: existing.role as Role,
+    };
+  }
+
+  const { data: created, error } = await admin
+    .from("profiles")
+    .upsert({
+      id: user.id,
+      email,
+      name: profileName(user, email),
+      role: Role.employee,
+    })
+    .select("id, email, name, role")
+    .single();
+
+  if (error || !created) {
+    console.error("Supabase profile upsert failed:", error?.message);
+    return null;
+  }
+
+  return {
+    id: created.id,
+    email: created.email,
+    name: created.name,
+    role: created.role as Role,
+  };
+}
+
+async function ensureProfileViaPrisma(
+  user: SupabaseAuthUser,
+): Promise<ProfileRow | null> {
   const existing = await prisma.profile.findUnique({
     where: { id: user.id },
     select: { id: true, email: true, name: true, role: true },
@@ -38,21 +106,24 @@ async function ensureProfile(user: SupabaseAuthUser) {
   const email = user.email?.trim();
   if (!email) return null;
 
-  const metadataName = user.user_metadata?.name;
-  const name =
-    typeof metadataName === "string" && metadataName.trim()
-      ? metadataName.trim()
-      : email.split("@")[0] || "User";
-
   return prisma.profile.create({
     data: {
       id: user.id,
       email,
-      name,
+      name: profileName(user, email),
       role: Role.employee,
     },
     select: { id: true, email: true, name: true, role: true },
   });
+}
+
+async function ensureProfile(user: SupabaseAuthUser): Promise<ProfileRow | null> {
+  try {
+    return await ensureProfileViaPrisma(user);
+  } catch (error) {
+    console.error("Prisma profile lookup failed, trying Supabase API:", error);
+    return ensureProfileViaSupabase(user);
+  }
 }
 
 function toSessionUser(profile: {
@@ -167,7 +238,7 @@ export async function authenticateRequest(
       status: 503,
       code: "DB_ERROR",
       error:
-        "Database connection failed. On Netlify, set DATABASE_URL to the Supabase transaction pooler (port 6543).",
+        "Database connection failed. In Netlify env vars, set DATABASE_URL to the Supabase transaction pooler (port 6543, user postgres.PROJECT_REF). Then redeploy. Open /api/health/db to verify.",
     };
   }
 }

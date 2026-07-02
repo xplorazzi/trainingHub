@@ -79,7 +79,7 @@ First build may take 2–5 minutes. When it succeeds, open the Netlify URL.
 | Build fails on Prisma | Ensure `DATABASE_URL` is set in Netlify env vars |
 | Login redirects fail | Add your Netlify URL to Supabase redirect URLs |
 | Database errors at runtime | Set `DATABASE_URL` to Supabase **Transaction pooler** (6543). Copy from Supabase → Database → Connection string → **Transaction pooler**. Username is `postgres.PROJECT_REF`, not `postgres`. |
-| Quiz results 404 on Netlify | Set `DATABASE_URL` to Supabase **transaction pooler** (6543); redeploy after env change |
+| Quiz submit shows database error | Open `https://YOUR-SITE.netlify.app/api/health/db` — `looksCorrectForNetlify` must be `true` and `dbOk` must be `true`. Update `DATABASE_URL`, then **Trigger deploy** (env changes alone are not enough on a warm instance). |
 | Images don’t load | Use direct image URLs; add host to `next.config.ts` `images.remotePatterns` |
 | Secrets scan fails on `NEXT_PUBLIC_*` | Mark those vars as **Build** not **Secret** in Netlify; or rely on `SECRETS_SCAN_OMIT_KEYS` in `netlify.toml` |
 | `@opentelemetry/api` edge error | Fixed via dependency in `package.json` — redeploy after pulling latest |

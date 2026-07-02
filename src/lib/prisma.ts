@@ -18,3 +18,7 @@ export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 // Reuse client across warm serverless invocations (Netlify)
 globalForPrisma.prisma = prisma;
+
+export async function pingDatabase() {
+  await prisma.$queryRaw`SELECT 1`;
+}
