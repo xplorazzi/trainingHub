@@ -18,5 +18,8 @@ export const config = {
     "/my-training/:path*",
     "/manager/:path*",
     "/admin/:path*",
+    "/api/modules/:path*",
+    "/modules/:path*/quiz",
+    "/modules/:path*/results",
   ],
 };

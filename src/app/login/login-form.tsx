@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ const DEMO_USERS = [
 ];
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/";
 
@@ -42,8 +41,7 @@ export function LoginForm() {
     }
 
     const destination = resolveInternalRedirect(redirect, window.location.origin);
-    router.push(`${destination.pathname}${destination.search}`);
-    router.refresh();
+    window.location.assign(`${destination.pathname}${destination.search}`);
   }
 
   return (

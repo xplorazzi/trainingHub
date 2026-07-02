@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { ModuleStepper } from "@/components/layout/module-stepper";
@@ -39,64 +39,105 @@ export function QuizClient({
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [resuming, setResuming] = useState(false);
+  const [resumeMessage, setResumeMessage] = useState<string | null>(null);
 
   const current = questions[currentIndex];
   const answeredCount = Object.keys(answers).length;
   const isLast = currentIndex === questions.length - 1;
 
-  function buildAnswerPayload(): PendingQuizAnswer[] {
+  const buildAnswerPayload = useCallback((): PendingQuizAnswer[] => {
     return questions.map((q) => ({
       questionId: q.id,
       selectedIndex: answers[q.id] ?? -1,
     }));
-  }
+  }, [answers, questions]);
 
-  async function submitAnswers(payload: PendingQuizAnswer[]) {
-    const res = await fetch(`/api/modules/${moduleId}/submit`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers: payload }),
-    });
+  const clearResumeParam = useCallback(() => {
+    if (searchParams.get("resume") !== "1") return;
+    router.replace(`/modules/${moduleId}/quiz`);
+  }, [moduleId, router, searchParams]);
 
-    if (!res.ok) {
-      const data = await res.json();
-      if (res.status === 401) {
-        savePendingQuiz(moduleId, payload);
-        const returnUrl = `/modules/${moduleId}/quiz?resume=1`;
-        router.push(`/login?redirect=${encodeURIComponent(returnUrl)}`);
+  const submitAnswers = useCallback(
+    async (
+      payload: PendingQuizAnswer[],
+      options?: { fromResume?: boolean },
+    ) => {
+      const res = await fetch(`/api/modules/${moduleId}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ answers: payload }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          savePendingQuiz(moduleId, payload);
+          if (options?.fromResume) {
+            setResumeMessage(
+              "You're signed in, but the server could not verify your session. Click Submit quiz to try again.",
+            );
+            return false;
+          }
+          const returnUrl = `/modules/${moduleId}/quiz?resume=1`;
+          window.location.href = `/login?redirect=${encodeURIComponent(returnUrl)}`;
+          return false;
+        }
+        alert(data.error ?? "Failed to submit quiz");
         return false;
       }
-      alert(data.error ?? "Failed to submit quiz");
-      return false;
-    }
 
-    const data = await res.json();
-    clearPendingQuiz(moduleId);
-    router.push(`/modules/${moduleId}/results?attemptId=${data.attemptId}`);
-    return true;
-  }
+      const data = await res.json();
+      clearPendingQuiz(moduleId);
+      router.push(`/modules/${moduleId}/results?attemptId=${data.attemptId}`);
+      return true;
+    },
+    [moduleId, router],
+  );
+
+  useEffect(() => {
+    if (answeredCount === 0) return;
+    savePendingQuiz(moduleId, buildAnswerPayload());
+  }, [answeredCount, buildAnswerPayload, moduleId]);
 
   useEffect(() => {
     if (resumeHandled.current) return;
+    resumeHandled.current = true;
 
     const pending = loadPendingQuiz(moduleId);
-    if (!pending) return;
+    const shouldResume = searchParams.get("resume") === "1";
 
-    resumeHandled.current = true;
+    if (!pending) {
+      if (shouldResume) {
+        clearResumeParam();
+        setResumeMessage(
+          "Saved answers were not found in this browser. Please complete the quiz again.",
+        );
+      }
+      return;
+    }
+
     setAnswers(pendingToAnswerMap(pending));
 
-    if (searchParams.get("resume") !== "1") return;
+    if (!shouldResume) return;
 
+    clearResumeParam();
     setResuming(true);
+
     void (async () => {
+      await new Promise((resolve) => setTimeout(resolve, 400));
       try {
-        await submitAnswers(pending.answers);
+        const ok = await submitAnswers(pending.answers, { fromResume: true });
+        if (!ok) {
+          setResumeMessage(
+            "Your answers are restored. Click Submit quiz to finish.",
+          );
+        }
       } finally {
         setResuming(false);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [moduleId, searchParams]);
+  }, [clearResumeParam, moduleId, searchParams, submitAnswers]);
 
   if (!current) {
     return (
@@ -118,6 +159,7 @@ export function QuizClient({
     }
 
     setSubmitting(true);
+    setResumeMessage(null);
     try {
       await submitAnswers(buildAnswerPayload());
     } finally {
@@ -132,6 +174,12 @@ export function QuizClient({
       {resuming && (
         <div className="mb-4 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-900">
           Submitting your saved answers…
+        </div>
+      )}
+
+      {resumeMessage && !resuming && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {resumeMessage}
         </div>
       )}
 

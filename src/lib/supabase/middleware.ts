@@ -11,11 +11,20 @@ function isProtectedPath(pathname: string) {
   );
 }
 
+function shouldRefreshSession(pathname: string) {
+  return (
+    pathname === "/login" ||
+    isProtectedPath(pathname) ||
+    pathname.startsWith("/api/modules/") ||
+    pathname.endsWith("/quiz") ||
+    pathname.endsWith("/results")
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Public pages: skip Supabase round-trip (major latency win on Netlify)
-  if (!isProtectedPath(pathname) && pathname !== "/login") {
+  if (!shouldRefreshSession(pathname)) {
     return NextResponse.next();
   }
 
