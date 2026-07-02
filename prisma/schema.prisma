@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  employee
+  manager
+  admin
+}
+
+enum ProgressStatus {
+  not_started
+  in_progress
+  passed
+  failed
+}
+
+model Profile {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  name      String
+  role      Role     @default(employee)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  attempts         Attempt[]
+  moduleProgresses ModuleProgress[]
+
+  @@map("profiles")
+}
+
+model TrainingModule {
+  id            String   @id @default(cuid())
+  slug          String?  @unique
+  title         String
+  description   String
+  videoUrl      String   @map("video_url")
+  passThreshold Int      @default(80) @map("pass_threshold")
+  durationMins  Int      @default(10) @map("duration_mins")
+  thumbnail     String?
+  category      String
+  objectives    String[] @default([])
+  required      Boolean  @default(true)
+  maxAttempts   Int      @default(3) @map("max_attempts")
+  dueDate       DateTime? @map("due_date")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  questions        Question[]
+  attempts         Attempt[]
+  moduleProgresses ModuleProgress[]
+
+  @@map("training_modules")
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  moduleId      String   @map("module_id")
+  text          String
+  options       String[]
+  correctIndex  Int      @map("correct_index")
+  explanation   String
+  orderIndex    Int      @default(0) @map("order_index")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  module TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@index([moduleId])
+  @@map("questions")
+}
+
+model Attempt {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id") @db.Uuid
+  moduleId    String   @map("module_id")
+  answers     Json
+  score       Int
+  total       Int
+  percentage  Int
+  passed      Boolean
+  completedAt DateTime @default(now()) @map("completed_at")
+
+  user   Profile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module TrainingModule   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([moduleId])
+  @@map("attempts")
+}
+
+model ModuleProgress {
+  id                 String         @id @default(cuid())
+  userId             String         @map("user_id") @db.Uuid
+  moduleId           String         @map("module_id")
+  videoAcknowledged  Boolean        @default(false) @map("video_acknowledged")
+  status             ProgressStatus @default(not_started)
+  attemptCount       Int            @default(0) @map("attempt_count")
+  latestAttemptId    String?        @map("latest_attempt_id")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  user   Profile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module TrainingModule   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@map("module_progress")
+}

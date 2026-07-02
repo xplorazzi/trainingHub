@@ -1,0 +1,314 @@
+[
+  {
+    "slug": "product-overview",
+    "title": "Product Overview",
+    "description": "Learn the core features, value proposition, and key differentiators of our flagship product line.",
+    "videoUrl": "https://www.youtube.com/embed/9No-FiEInLA",
+    "passThreshold": 80,
+    "durationMins": 12,
+    "thumbnail": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=225&fit=crop",
+    "category": "Product",
+    "required": true,
+    "maxAttempts": 3,
+    "objectives": [
+      "Identify the three core product pillars",
+      "Explain how our solution differs from competitors",
+      "Describe the ideal customer profile",
+      "Summarize the primary use cases"
+    ],
+    "questions": [
+      {
+        "text": "What are the three core pillars of our product?",
+        "options": ["Speed, Security, Scale", "Price, Quality, Support", "Design, Marketing, Sales", "Cloud, Mobile, Desktop"],
+        "correctIndex": 0,
+        "explanation": "Our product is built on Speed, Security, and Scale — the foundation of every feature we ship."
+      },
+      {
+        "text": "Who is the primary ideal customer profile (ICP)?",
+        "options": ["Enterprise IT teams with 500+ employees", "Individual freelancers", "Government agencies only", "Retail store owners"],
+        "correctIndex": 0,
+        "explanation": "Our ICP is mid-to-large enterprise IT teams that need secure, scalable infrastructure."
+      },
+      {
+        "text": "Which competitor weakness do we most directly address?",
+        "options": ["Slow deployment cycles", "Lack of mobile apps", "No free tier", "Limited color themes"],
+        "correctIndex": 0,
+        "explanation": "Competitors typically require weeks to deploy; we enable same-day provisioning."
+      },
+      {
+        "text": "What is our primary deployment model?",
+        "options": ["Cloud-native SaaS", "On-premise only", "USB installation", "Paper-based workflow"],
+        "correctIndex": 0,
+        "explanation": "We are a cloud-native SaaS platform with optional hybrid deployment for enterprise clients."
+      },
+      {
+        "text": "Which use case is NOT a primary fit for our product?",
+        "options": ["Personal photo editing", "DevOps automation", "Security compliance", "Team collaboration"],
+        "correctIndex": 0,
+        "explanation": "Photo editing is outside our scope; we focus on enterprise infrastructure and collaboration."
+      },
+      {
+        "text": "What uptime SLA do we guarantee on the Enterprise plan?",
+        "options": ["99.9%", "95%", "99%", "100%"],
+        "correctIndex": 0,
+        "explanation": "Enterprise customers receive a 99.9% uptime SLA with financial credits for breaches."
+      },
+      {
+        "text": "How does our pricing model work?",
+        "options": ["Per-seat subscription with tiered plans", "One-time lifetime license", "Pay per API call only", "Free for everyone"],
+        "correctIndex": 0,
+        "explanation": "We use per-seat subscriptions with Starter, Pro, and Enterprise tiers."
+      },
+      {
+        "text": "What security certification do we hold?",
+        "options": ["SOC 2 Type II", "None", "ISO 9001 only", "Local business license"],
+        "correctIndex": 0,
+        "explanation": "We maintain SOC 2 Type II certification, audited annually."
+      }
+    ]
+  },
+  {
+    "slug": "sales-playbook",
+    "title": "Sales Playbook",
+    "description": "Master the sales methodology, objection handling, and demo flow for closing enterprise deals.",
+    "videoUrl": "https://www.youtube.com/embed/u6XAPnE0sq0",
+    "passThreshold": 80,
+    "durationMins": 10,
+    "thumbnail": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&h=225&fit=crop",
+    "category": "Sales",
+    "required": true,
+    "maxAttempts": 3,
+    "objectives": [
+      "Execute the 5-step discovery call framework",
+      "Handle the top three customer objections",
+      "Deliver a compelling 10-minute product demo",
+      "Identify qualified leads using BANT criteria"
+    ],
+    "questions": [
+      {
+        "text": "What is the first step in our discovery call framework?",
+        "options": ["Build rapport and set agenda", "Present pricing immediately", "Send contract", "Schedule follow-up only"],
+        "correctIndex": 0,
+        "explanation": "Always open with rapport-building and a clear agenda to establish trust and structure."
+      },
+      {
+        "text": "What does BANT stand for in lead qualification?",
+        "options": ["Budget, Authority, Need, Timeline", "Brand, Assets, Network, Team", "Buy, Ask, Negotiate, Trade", "Business, Analysis, Numbers, Targets"],
+        "correctIndex": 0,
+        "explanation": "BANT = Budget, Authority, Need, Timeline — our standard qualification framework."
+      },
+      {
+        "text": "How should you respond when a prospect says 'It's too expensive'?",
+        "options": ["Acknowledge and pivot to ROI value", "Offer 90% discount immediately", "End the call", "Ignore the comment"],
+        "correctIndex": 0,
+        "explanation": "Acknowledge the concern, then quantify ROI with concrete numbers from case studies."
+      },
+      {
+        "text": "What is the ideal length of our standard product demo?",
+        "options": ["10 minutes", "60 minutes", "2 hours", "30 seconds"],
+        "correctIndex": 0,
+        "explanation": "A focused 10-minute demo keeps attention and highlights the highest-impact features."
+      },
+      {
+        "text": "When should you involve a Solutions Engineer?",
+        "options": ["Technical deep-dive or POC requests", "Every first call", "Only after contract signed", "Never"],
+        "correctIndex": 0,
+        "explanation": "Bring in a Solutions Engineer when the prospect needs technical validation or a POC."
+      },
+      {
+        "text": "What CRM stage follows 'Qualified Lead'?",
+        "options": ["Discovery", "Closed Lost", "Renewal", "Churned"],
+        "correctIndex": 0,
+        "explanation": "After qualification, move to Discovery to understand needs before demoing."
+      }
+    ]
+  },
+  {
+    "slug": "compliance-safety",
+    "title": "Compliance & Safety",
+    "description": "Essential workplace safety protocols and regulatory compliance requirements every employee must know.",
+    "videoUrl": "https://www.youtube.com/embed/8jPQjjsBbIc",
+    "passThreshold": 80,
+    "durationMins": 8,
+    "thumbnail": "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=225&fit=crop",
+    "category": "Safety",
+    "required": true,
+    "maxAttempts": 3,
+    "objectives": [
+      "Identify workplace hazards and report procedures",
+      "Follow data privacy and GDPR basics",
+      "Know emergency evacuation routes",
+      "Understand phishing and security incident reporting"
+    ],
+    "questions": [
+      {
+        "text": "What should you do if you notice a workplace hazard?",
+        "options": ["Report it immediately to your supervisor or safety officer", "Ignore it if it's not your area", "Fix it yourself without telling anyone", "Post about it on social media"],
+        "correctIndex": 0,
+        "explanation": "All hazards must be reported immediately — never assume someone else will handle it."
+      },
+      {
+        "text": "Under GDPR, what is personal data?",
+        "options": ["Any information relating to an identifiable person", "Only credit card numbers", "Only government IDs", "Public social media posts only"],
+        "correctIndex": 0,
+        "explanation": "Personal data is any information that can identify a natural person, directly or indirectly."
+      },
+      {
+        "text": "What is the correct response to a suspected phishing email?",
+        "options": ["Report to IT security and do not click links", "Click the link to verify", "Forward to all colleagues", "Reply with your password"],
+        "correctIndex": 0,
+        "explanation": "Never interact with suspicious emails — report to IT security immediately."
+      },
+      {
+        "text": "Where can you find emergency evacuation routes?",
+        "options": ["Posted on walls near exits and in the employee handbook", "Only on the CEO's desk", "They are not documented", "Social media"],
+        "correctIndex": 0,
+        "explanation": "Evacuation routes are posted throughout the building and documented in the handbook."
+      },
+      {
+        "text": "How often should you update your workstation password?",
+        "options": ["Every 90 days or when compromised", "Never", "Once per decade", "Only when IT asks via email link"],
+        "correctIndex": 0,
+        "explanation": "Passwords must be updated every 90 days and immediately if you suspect compromise."
+      }
+    ]
+  },
+  {
+    "slug": "contec-contec10b-fetal-doppler",
+    "title": "CONTEC CONTEC10B Fetal Doppler",
+    "description": "Portable fetal heartbeat monitor with 2 MHz probe and LED display — specs, safe use, and sales talking points for clinic and home customers.",
+    "videoUrl": "https://www.youtube.com/embed/LNOMcrDrcUY",
+    "passThreshold": 80,
+    "durationMins": 10,
+    "thumbnail": "https://images.unsplash.com/photo-1584515933487-779824d29309?w=400&h=225&fit=crop",
+    "category": "Medical Equipment",
+    "required": true,
+    "maxAttempts": 3,
+    "objectives": [
+      "Explain fetal heart rate range and accuracy of the CONTEC10B",
+      "Describe the 2.0 MHz probe and LED display features",
+      "Communicate safety classification and warranty to customers",
+      "Guide proper gel application and probe placement basics",
+      "Reference Amazon listing: CONTEC CONTEC10B (B0H2HV6SMQ)"
+    ],
+    "questions": [
+      {
+        "text": "What is the fetal heart rate (FHR) measurement range of the CONTEC10B?",
+        "options": ["50–240 BPM", "20–80 BPM", "100–300 BPM", "60–120 BPM only"],
+        "correctIndex": 0,
+        "explanation": "The CONTEC10B measures fetal heart rate from 50 BPM to 240 BPM with high precision."
+      },
+      {
+        "text": "What is the stated accuracy of the CONTEC10B heart rate reading?",
+        "options": ["±2 BPM", "±10 BPM", "±0.5 BPM", "±15%"],
+        "correctIndex": 0,
+        "explanation": "Amazon listing specifies accuracy of ±2 BPM for reliable pregnancy monitoring."
+      },
+      {
+        "text": "What probe frequency does the CONTEC10B use?",
+        "options": ["2.0 MHz", "1.0 MHz", "5.0 MHz", "8.0 MHz"],
+        "correctIndex": 0,
+        "explanation": "It uses a professional-grade 2.0 MHz ultrasonic probe for stable fetal heartbeat detection."
+      },
+      {
+        "text": "What type of display does the CONTEC10B have?",
+        "options": ["LED digital display with 1 BPM resolution", "Analog dial only", "No display — audio only", "Color touchscreen"],
+        "correctIndex": 0,
+        "explanation": "The large LED screen shows heart rate with 1 BPM resolution for easy reading."
+      },
+      {
+        "text": "What safety classification is highlighted for the CONTEC10B?",
+        "options": ["Type CF applied part, internally powered", "IP68 waterproof for swimming", "Explosion-proof industrial", "No medical classification"],
+        "correctIndex": 0,
+        "explanation": "Built as internally powered equipment with Type CF applied part safety standards for prenatal monitoring."
+      },
+      {
+        "text": "What warranty period comes with the Amazon.in listing?",
+        "options": ["1 year warranty", "6 months", "3 years", "No warranty"],
+        "correctIndex": 0,
+        "explanation": "The product listing includes a 1-year warranty from the manufacturer/seller."
+      },
+      {
+        "text": "What should customers apply on the probe before use?",
+        "options": ["Ultrasound gel on the probe surface", "Water only", "Alcohol sanitizer", "No gel required"],
+        "correctIndex": 0,
+        "explanation": "Ultrasound gel improves signal coupling — standard practice for all fetal doppler devices."
+      },
+      {
+        "text": "Who is the primary intended user for this product?",
+        "options": ["Expecting parents and clinical prenatal care", "Athletes tracking fitness", "Infant ICU only", "Veterinary use only"],
+        "correctIndex": 0,
+        "explanation": "Designed for pregnancy monitoring at home and in clinic settings for fetal heart activity."
+      }
+    ]
+  },
+  {
+    "slug": "ifb-executive-oxn-9014-cms",
+    "title": "IFB EXECUTIVE OXN 9014 CMS",
+    "description": "9 kg AI-powered front load washing machine with DeepClean®, PowerSteam®, WiFi, and Eco Inverter — features, specs, and customer demo guide.",
+    "videoUrl": "https://www.youtube.com/embed/hsCcG7C2lcQ",
+    "passThreshold": 80,
+    "durationMins": 11,
+    "thumbnail": "https://images.unsplash.com/photo-1626806787420-004c6424a0ea?w=400&h=225&fit=crop",
+    "category": "Home Appliances",
+    "required": true,
+    "maxAttempts": 3,
+    "objectives": [
+      "State capacity, energy rating, and load type for the EXECUTIVE OXN 9014 CMS",
+      "Explain DeepClean®, PowerSteam®, and AI-powered wash benefits",
+      "Describe WiFi, My IFB app, and smart control features",
+      "Communicate spin speed, heater, and Eco Inverter motor advantages",
+      "Reference Amazon listing: IFB EXECUTIVE OXN 9014 CMS (B0FMDWJZ34)"
+    ],
+    "questions": [
+      {
+        "text": "What is the wash capacity of the IFB EXECUTIVE OXN 9014 CMS?",
+        "options": ["9 kg", "7 kg", "12 kg", "6 kg"],
+        "correctIndex": 0,
+        "explanation": "This model is a 9 kg fully automatic front load washing machine."
+      },
+      {
+        "text": "What energy efficiency rating does this IFB model carry on Amazon.in?",
+        "options": ["5 Star", "3 Star", "1 Star", "Not rated"],
+        "correctIndex": 0,
+        "explanation": "Listed as a 5 Star rated appliance for energy efficiency."
+      },
+      {
+        "text": "What is the maximum spin speed of the EXECUTIVE OXN 9014 CMS?",
+        "options": ["1400 RPM", "800 RPM", "1000 RPM", "2000 RPM"],
+        "correctIndex": 0,
+        "explanation": "Maximum spin speed is 1400 RPM for effective moisture removal after wash cycles."
+      },
+      {
+        "text": "Which smart connectivity features are included?",
+        "options": ["WiFi with My IFB app control", "Bluetooth speaker only", "No smart features", "Ethernet port required"],
+        "correctIndex": 0,
+        "explanation": "The machine supports WiFi connectivity and can be controlled via the My IFB app."
+      },
+      {
+        "text": "Which premium wash technologies are highlighted for this model?",
+        "options": ["DeepClean® and PowerSteam®", "Hand-wash drum only", "Dry cleaning solvent system", "Ultrasonic-only wash"],
+        "correctIndex": 0,
+        "explanation": "DeepClean® and PowerSteam® are key differentiators on the Amazon product listing."
+      },
+      {
+        "text": "What type of motor does the EXECUTIVE OXN 9014 CMS use?",
+        "options": ["Eco Inverter motor", "Standard brushed motor", "Dual diesel engine", "Manual crank drive"],
+        "correctIndex": 0,
+        "explanation": "Eco Inverter motor delivers efficient, quieter operation with variable speed control."
+      },
+      {
+        "text": "Does this model include an inbuilt heater?",
+        "options": ["Yes, with multiple temperature options", "No heater — cold wash only", "External heater required", "Heater optional accessory only"],
+        "correctIndex": 0,
+        "explanation": "Built-in heater supports temperature ranges including 30°C, 40°C, 60°C, and up to 95°C cycles."
+      },
+      {
+        "text": "What load and function type describes this washing machine?",
+        "options": ["Fully automatic front load", "Semi-automatic top load", "Manual twin tub", "Industrial conveyor washer"],
+        "correctIndex": 0,
+        "explanation": "It is a fully automatic front load washing machine with dryer spin function."
+      }
+    ]
+  }
+]

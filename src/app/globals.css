@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --brand-primary: #e37222;
+  --brand-primary-dark: #c05f18;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* xperie.nz brand orange */
+  --color-brand-50: #fef5ef;
+  --color-brand-100: #fde6d6;
+  --color-brand-200: #fac8a8;
+  --color-brand-300: #f5a574;
+  --color-brand-400: #ef8240;
+  --color-brand-500: #e37222;
+  --color-brand-600: #e37222;
+  --color-brand-700: #c05f18;
+  --color-brand-800: #9a4d15;
+  --color-brand-900: #7a3f14;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body.celebrate-pass {
+  animation: celebrate 0.6s ease;
+}
+
+@keyframes celebrate {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.002);
+  }
+}
+
+@media print {
+  header,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+}
